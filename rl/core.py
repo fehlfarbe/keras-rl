@@ -129,7 +129,7 @@ class Agent(object):
 
                     # Obtain the initial observation by resetting the environment.
                     self.reset_states()
-                    observation = deepcopy(env.reset())
+                    observation, valid_indices = deepcopy(env.reset())
                     if self.processor is not None:
                         observation = self.processor.process_observation(observation)
                     assert observation is not None
@@ -166,7 +166,7 @@ class Agent(object):
                 callbacks.on_step_begin(episode_step)
                 # This is were all of the work happens. We first perceive and compute the action
                 # (forward step) and then use the reward to improve (backward step).
-                action = self.forward(observation)
+                action = self.forward(observation, valid_indices)
                 if self.processor is not None:
                     action = self.processor.process_action(action)
                 reward = np.float32(0)
@@ -174,7 +174,7 @@ class Agent(object):
                 done = False
                 for _ in range(action_repetition):
                     callbacks.on_action_begin(action)
-                    observation, r, done, info = env.step(action)
+                    observation, r, done, info, valid_indices = env.step(action)
                     observation = deepcopy(observation)
                     if self.processor is not None:
                         observation, r, done, info = self.processor.process_step(observation, r, done, info)
@@ -401,7 +401,7 @@ class Agent(object):
         """
         pass
 
-    def forward(self, observation):
+    def forward(self, observation, valid_indices=None):
         """Takes the an observation from the environment and returns the action to be taken next.
         If the policy is implemented by a neural network, this corresponds to a forward (inference) pass.
 

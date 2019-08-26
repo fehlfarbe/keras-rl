@@ -138,6 +138,7 @@ class SoftmaxPolicy(Policy):
         action = np.random.choice(range(nb_actions), p=probs)
         return action
 
+
 class EpsGreedyQPolicy(Policy):
     """Implement the epsilon greedy policy
 
@@ -150,7 +151,7 @@ class EpsGreedyQPolicy(Policy):
         super(EpsGreedyQPolicy, self).__init__()
         self.eps = eps
 
-    def select_action(self, q_values):
+    def select_action(self, q_values, valid_indices=None):
         """Return the selected action
 
         # Arguments
@@ -160,10 +161,25 @@ class EpsGreedyQPolicy(Policy):
             Selection action
         """
         assert q_values.ndim == 1
-        nb_actions = q_values.shape[0]
+
+        if valid_indices is not None:
+            # # set q_values that aren't in valid_indices to zero and renormalize
+            # # https://ai.stackexchange.com/questions/2980/how-to-handle-invalid-moves-in-reinforcement-learning
+            mask = np.ones(q_values.shape, dtype=bool)  # np.ones_like(a,dtype=bool)
+            mask[valid_indices] = False
+            q_values[mask] = 0.0
+            # # q_values *= valid_indices
+            q_values = q_values / np.linalg.norm(q_values)
+            # q_sum = np.sum(q_values)
+            nb_actions = valid_indices.shape[0]
+        else:
+            nb_actions = q_values.shape[0]
 
         if np.random.uniform() < self.eps:
-            action = np.random.randint(0, nb_actions)
+            if valid_indices is not None:
+                action = valid_indices[np.random.randint(0, nb_actions)]
+            else:
+                action = np.random.randint(0, nb_actions)
         else:
             action = np.argmax(q_values)
         return action
@@ -184,7 +200,7 @@ class GreedyQPolicy(Policy):
 
     Greedy policy returns the current best action according to q_values
     """
-    def select_action(self, q_values):
+    def select_action(self, q_values, valid_indices=None):
         """Return the selected action
 
         # Arguments
@@ -209,7 +225,7 @@ class BoltzmannQPolicy(Policy):
         self.tau = tau
         self.clip = clip
 
-    def select_action(self, q_values):
+    def select_action(self, q_values, valid_indices=None):
         """Return the selected action
 
         # Arguments
@@ -254,7 +270,7 @@ class MaxBoltzmannQPolicy(Policy):
         self.tau = tau
         self.clip = clip
 
-    def select_action(self, q_values):
+    def select_action(self, q_values, valid_indices=None):
         """Return the selected action
         The selected action follows the BoltzmannQPolicy with probability epsilon
         or return the Greedy Policy with probability (1 - epsilon)
@@ -311,7 +327,7 @@ class BoltzmannGumbelQPolicy(Policy):
         self.C = C
         self.action_counts = None
 
-    def select_action(self, q_values):
+    def select_action(self, q_values, valid_indices=None):
         """Return the selected action
 
         # Arguments
