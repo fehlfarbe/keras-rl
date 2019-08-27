@@ -167,21 +167,25 @@ class EpsGreedyQPolicy(Policy):
             # # https://ai.stackexchange.com/questions/2980/how-to-handle-invalid-moves-in-reinforcement-learning
             mask = np.ones(q_values.shape, dtype=bool)  # np.ones_like(a,dtype=bool)
             mask[valid_indices] = False
-            q_values[mask] = 0.0
+            q_values[mask] = np.amin(q_values)
             # # q_values *= valid_indices
             q_values = q_values / np.linalg.norm(q_values)
             # q_sum = np.sum(q_values)
-            nb_actions = valid_indices.shape[0]
+            nb_actions = len(valid_indices)
         else:
             nb_actions = q_values.shape[0]
 
         if np.random.uniform() < self.eps:
             if valid_indices is not None:
-                action = valid_indices[np.random.randint(0, nb_actions)]
+                action = int(valid_indices[np.random.randint(0, nb_actions)][0])
             else:
                 action = np.random.randint(0, nb_actions)
         else:
             action = np.argmax(q_values)
+
+        if valid_indices is not None:
+            assert action in valid_indices
+
         return action
 
     def get_config(self):
