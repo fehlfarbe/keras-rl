@@ -184,6 +184,8 @@ class EpsGreedyQPolicy(Policy):
             action = np.argmax(q_values)
 
         if valid_indices is not None:
+            if action not in valid_indices:
+                print("Action {} not in valid indices: {}\n{}".format(action, valid_indices, q_values))
             assert action in valid_indices
 
         return action
