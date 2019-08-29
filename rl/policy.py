@@ -172,21 +172,25 @@ class EpsGreedyQPolicy(Policy):
             q_values = q_values / np.linalg.norm(q_values)
             # q_sum = np.sum(q_values)
             nb_actions = len(valid_indices)
+
+            if np.random.uniform() < self.eps:
+                # get random action from masked q_values
+                action = int(valid_indices[np.random.randint(0, nb_actions)][0])
+            else:
+                # get idx of masked q_value with highest value
+                idx = q_values[~mask].argmax()
+                action = valid_indices[idx]
+
+            if action not in valid_indices:
+                print("Action {} not in valid indices: {}\n{}".format(action, valid_indices, q_values))
+                assert action in valid_indices
         else:
             nb_actions = q_values.shape[0]
 
-        if np.random.uniform() < self.eps:
-            if valid_indices is not None:
-                action = int(valid_indices[np.random.randint(0, nb_actions)][0])
-            else:
+            if np.random.uniform() < self.eps:
                 action = np.random.randint(0, nb_actions)
-        else:
-            action = np.argmax(q_values)
-
-        if valid_indices is not None:
-            if action not in valid_indices:
-                print("Action {} not in valid indices: {}\n{}".format(action, valid_indices, q_values))
-            assert action in valid_indices
+            else:
+                action = np.argmax(q_values)
 
         return action
 
