@@ -62,12 +62,12 @@ class AbstractDQNAgent(Agent):
     def compute_batch_q_values(self, state_batch):
         batch = self.process_state_batch(state_batch)
         q_values = self.model.predict_on_batch(batch)
-        assert q_values.shape == (len(state_batch), self.nb_actions)
+        assert q_values.shape == (len(batch), self.nb_actions)
         return q_values
 
     def compute_q_values(self, state):
         q_values = self.compute_batch_q_values([state]).flatten()
-        assert q_values.shape == (self.nb_actions,)
+        assert q_values.shape == (self.nb_actions*self.memory.window_length,)
         return q_values
 
     def get_config(self):
