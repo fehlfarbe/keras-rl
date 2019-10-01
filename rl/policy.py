@@ -248,8 +248,17 @@ class BoltzmannQPolicy(Policy):
         q_values = q_values.astype('float64')
         nb_actions = q_values.shape[0]
 
+        if valid_indices is not None:
+            valid_indices = np.squeeze(valid_indices, axis=1)
+            q_values = np.take(q_values, valid_indices)
+            exp_values = np.exp(np.clip(q_values / self.tau, self.clip[0], self.clip[1]))
+            probs = exp_values / np.sum(exp_values)
+            action = np.random.choice(valid_indices, p=probs)
+            return action
+
         exp_values = np.exp(np.clip(q_values / self.tau, self.clip[0], self.clip[1]))
         probs = exp_values / np.sum(exp_values)
+
         action = np.random.choice(range(nb_actions), p=probs)
         return action
 
