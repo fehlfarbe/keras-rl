@@ -306,7 +306,7 @@ class Agent(object):
 
             # Obtain the initial observation by resetting the environment.
             self.reset_states()
-            observation = deepcopy(env.reset())
+            observation, valid_indices = deepcopy(env.reset())
             if self.processor is not None:
                 observation = self.processor.process_observation(observation)
             assert observation is not None
@@ -346,7 +346,7 @@ class Agent(object):
                 accumulated_info = {}
                 for _ in range(action_repetition):
                     callbacks.on_action_begin(action)
-                    observation, r, d, info = env.step(action)
+                    observation, r, d, info, valid_indices = env.step(action)
                     observation = deepcopy(observation)
                     if self.processor is not None:
                         observation, r, d, info = self.processor.process_step(observation, r, d, info)
