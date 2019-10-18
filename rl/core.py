@@ -339,7 +339,7 @@ class Agent(object):
             while not done:
                 callbacks.on_step_begin(episode_step)
 
-                action = self.forward(observation)
+                action = self.forward(observation, valid_indices)
                 if self.processor is not None:
                     action = self.processor.process_action(action)
                 reward = 0.
@@ -382,7 +382,7 @@ class Agent(object):
             # resetting the environment. We need to pass in `terminal=False` here since
             # the *next* state, that is the state of the newly reset environment, is
             # always non-terminal by convention.
-            self.forward(observation)
+            self.forward(observation, valid_indices)
             self.backward(0., terminal=False)
 
             # Report end of episode.
