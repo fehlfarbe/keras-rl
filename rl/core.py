@@ -117,6 +117,7 @@ class Agent(object):
         episode = np.int16(0)
         self.step = np.int16(0)
         observation = None
+        valid_indices = None
         episode_reward = None
         episode_step = None
         did_abort = False
@@ -145,10 +146,10 @@ class Agent(object):
                         if self.processor is not None:
                             action = self.processor.process_action(action)
                         callbacks.on_action_begin(action)
-                        observation, reward, done, info = env.step(action)
+                        observation, reward, done, info, valid_indices = env.step(action)
                         observation = deepcopy(observation)
                         if self.processor is not None:
-                            observation, reward, done, info = self.processor.process_step(observation, reward, done, info)
+                            observation, reward, done, info, valid_indices = self.processor.process_step(observation, reward, done, info)
                         callbacks.on_action_end(action)
                         if done:
                             warnings.warn('Env ended before {} random steps could be performed at the start. You should probably lower the `nb_max_start_steps` parameter.'.format(nb_random_start_steps))
